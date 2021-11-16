@@ -22,6 +22,7 @@ async function start () {
 
   print.success('Complete file copy!')
 
+  // 从vue 中提取less 并写入同名同目录下的less文件 ，同时删除vue文件中style相关的代码
   const abstract = await abstractLessFromVue()
 
   if (!abstract) {
@@ -32,10 +33,12 @@ async function start () {
 
   print.success('Complete less file extraction!')
 
+  // 将提取出的less 编译到css 调用 lessc 将less文件写入同名的css 文件
   await compileLessToCss()
 
   print.success('Complete less compilation to css!')
 
+  // 删除编译前的less 文件
   const unlink = await unlinkDirFileByExtname(COMPILE_SRC, ['.less'])
 
   if (!unlink) {
@@ -46,6 +49,7 @@ async function start () {
 
   print.success('Complete less file deletion!')
 
+  // 将上步 编译好的css 进行导入 插入到index.js文件中
   const addImport = await addCssImport()
 
   if (!addImport) {
@@ -56,6 +60,7 @@ async function start () {
 
   print.success('Finish adding css import statement!')
 
+  // 收集components 中的组件  生成exports 字符串 插入到lib/index.js 中
   const componentsExport = await addComponentsExport()
 
   if (!componentsExport) {
@@ -66,7 +71,7 @@ async function start () {
 
   print.success('Finish adding components export statement!')
 
-  // Compile for UMD version
+  // Compile for UMD version 构建umd 的datav 包
   const rollupCompile = await exec(`rollup -c build/rollup.config.js`)
 
   if (!rollupCompile) {
@@ -77,6 +82,7 @@ async function start () {
 
   print.tip('After rollupCompile')
 
+  // 构建 压缩版本的 umd datav 包
   const terser = await exec(`rollup -c build/rollup.terser.config.js`)
 
   if (!terser) {
